@@ -1,11 +1,11 @@
 '''
 # Schelling Model
-Thomas Schelling (1971) created an agent based model using checker boards to 
-simulate the creation of segregated neighborhoods, in a society where no individual 
-necessarily has a strong preference for segregation.  To see a simulation with a visual 
+Thomas Schelling (1971) created an agent based model using checker boards to
+simulate the creation of segregated neighborhoods, in a society where no individual
+necessarily has a strong preference for segregation. To see a simulation with a visual
 component, visit the bottom of this page: http://nifty.stanford.edu/2014/mccown-schelling-model-segregation/
-The following code will replicate his model in Python.  
-We will not create a visual component in this class, though it is well within 
+The following code will replicate his model in Python.
+We will not create a visual component in this class, though it is well within
 Python's abilities to do so.  We will use the following guidelines:
 
 1. At least two kinds of agents
@@ -14,7 +14,7 @@ Python's abilities to do so.  We will use the following guidelines:
 
 
 The World class has been made for you, take a look and try to understand how it works
-Your task is to write a function for Agents 
+Your task is to write a function for Agents
 '''
 
 from numpy import random, mean
@@ -28,7 +28,7 @@ params = {'world_size':(20,20),
           'print_to_screen': True}  #toggle this T/F to print output
 
 class Agent():
-    #An agent needs to know if it is happy, needs to be able to move (find a vacancy and fill
+    # An agent needs to know if it is happy, needs to be able to move (find a vacancy and fill
     # it), can either check if it'll be happy in the new location, or not and
     # needs to report to World what it did
         def __init__(self, world, kind, same_pref):
@@ -36,10 +36,10 @@ class Agent():
         self.kind = kind
         self.same_pref = same_pref
         self.location = None
-    
-    def move(self): 
+
+    def move(self):
         #moves an agent
-        #agent has to know if it is happy to decide if it'll move 
+        #agent has to know if it is happy to decide if it'll move
         #agent has to be able to find vacancies (use self.world.find_vacant(...))
         #return something that indicates if the agent moved
 
@@ -51,7 +51,24 @@ class Agent():
         #return 0 # red happy, did not move
         #return 1 # blue happy, did not move
 
-        pass
+        new_loc = self.find_vacant()
+        if self.kind == 'red':
+            if self.am_i_happy == False and self.am_i_happy(new_loc):
+                return 4 #red moved
+            elif self.am_i_happy == False and self.am_i_happy(new_loc) == False:
+                return 2 # red unhappy but did not move
+            else:
+                return 0 # red happy, did not move
+        elif self.kind == 'blue':
+            if self.am_i_happy == False and self.am_i_happy(new_loc):
+                return 5 #blue moved
+            elif self.am_i_happy == False and self.am_i_happy(new_loc) == False:
+                return 3  # blue unhappy but did not move
+            else:
+                return 1 # blue happy, did not move
+        else:
+            pass
+
 
     def am_i_happy(self, loc=False, neighbor_check=False):
         #this should return a boolean for whether or not an agent is happy at a location
@@ -62,7 +79,7 @@ class Agent():
         #if len(neighbor_kinds) == 0:
         #    return False
         pass
-    
+
     def start_happy_r_b(self):
     #for reporting purposes, allow count of happy before any moves, of red and blue seperately
         if self.am_i_happy and self.kind == 'red':
@@ -104,11 +121,11 @@ class World():
                 return params['same_pref_r']
             else:
                 return params['same_pref_b']
-        
+
         agents = [Agent(self, _kind_picker(i), _pref_picker(i)) for i in range(num_agents)]
         random.shuffle(agents)
         return agents
-    
+
 
     def init_world(self):
         #a method for all the steps necessary to create the starting point of the model
@@ -188,14 +205,14 @@ class World():
                 diff_neighbours_b.append(sum(
                     [not a for a in agent.am_i_happy(neighbor_check=True)]
                                 ))
-                
+
 
         self.reports['integration'].append(round(mean(diff_neighbors), 2))
         self.reports['red_integration'].append(round(mean(diff_neighbours_r), 2))
         self.reports['blue_integration'].append(round(mean(diff_neighbours_b), 2))
 
 
-    def run(self): 
+    def run(self):
         #handle the iterations of the model
         log_of_happy = []
         log_of_happy_r = []
@@ -209,11 +226,11 @@ class World():
 
         self.report_integration()
         log_of_happy.append(sum([a.am_i_happy() for a in self.agents])) #starting happiness
-        
+
         happy_results = [agent.start_happy_r_b() for agent in self.agents]
         log_of_happy_r.append(sum([r == 'a' for r in happy_results])) #starting happiness
-        log_of_happy_b.append(sum([r == 'b' for r in happy_results])) #starting happiness       
-        
+        log_of_happy_b.append(sum([r == 'b' for r in happy_results])) #starting happiness
+
         log_of_moved_r.append(0) #no one moved at startup
         log_of_moved_b.append(0) #no one moved at startup
 
@@ -224,7 +241,7 @@ class World():
 
             random.shuffle(self.agents) #randomize agents before every iteration
             move_results = [agent.move() for agent in self.agents]
-            
+
             self.report_integration()
 
             num_happy_at_start   =sum([r==0 for r in move_results]) + sum([r==1 for r in move_results])
@@ -238,10 +255,10 @@ class World():
             num_moved_b          = sum([r==5 for r in move_results])
 
             log_of_happy.append(num_happy_at_start)
-            
-            
 
-            
+
+
+
 
             log_of_happy_r.append(num_happy_at_start_r)
             log_of_happy_b.append(num_happy_at_start_b)
@@ -252,7 +269,7 @@ class World():
             log_of_stay_r.append(num_stayed_unhappy_r)
             log_of_stay_b.append(num_stayed_unhappy_b)
 
-           
+
             if log_of_happy[-1] == params['num_agents']:
                 print('Everyone is happy!  Stopping after iteration {}.'.format(iteration))
                 break
@@ -288,7 +305,7 @@ class World():
             print('The number of blue agent moves per turn:', reports['log_of_moved_b'])
             print('The number of red agents who failed to find a new home:', reports['log_of_stay_r'])
             print('The number of blue agents who failed to find a new home:', reports['log_of_stay_b'])
-            
+
 
 
 world = World(params)
@@ -312,6 +329,3 @@ The number of blue agent moves per turn: [0, 45, 8, 2, 2, 1, 0]
 The number of red agents who failed to find a new home: [0, 0, 0, 0, 0, 0, 0]
 The number of blue agents who failed to find a new home: [0, 0, 0, 0, 0, 0, 0]
 '''
-
-
-
