@@ -78,7 +78,35 @@ class Agent():
         #if an agent is in a patch with no neighbors at all, treat it as unhappy
         #if len(neighbor_kinds) == 0:
         #    return False
-        pass
+        if loc == False:
+            neighbors = self.locate_neighbors()     # (x,y) list of the agent's neighbors
+            neighbor_kinds = []
+            for agent in self.agents:
+                if agent.location in neighbors:
+                    neighbor_kinds.append(agent.kind)
+            if len(neighbor_kinds) == 0:
+                return False
+            else:
+                ratio = count(agent.kind == self.kind for agent in neighbor_kinds) / count(agent in neighbor_kinds)
+                if ratio >= self.same_pref:
+                    return True
+                else:
+                    return False
+        else:
+            neighbors = self.locate_neighbors(loc)  # (x,y) list of the agent's neighbors
+            neighbor_kinds = []
+            for agent in self.agents:
+                if agent.location in neighbors:
+                    neighbor_kinds.append(agent.kind)
+            if len(neighbor_kinds) == 0:
+                return False
+            else:
+                ratio = count(agent.kind == self.kind for agent in neighbor_kinds) / count(agent in neighbor_kinds)
+                if ratio >= self.same_pref:
+                    return True
+                else:
+                    return False
+
 
     def start_happy_r_b(self):
     #for reporting purposes, allow count of happy before any moves, of red and blue seperately
