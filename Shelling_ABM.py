@@ -17,7 +17,7 @@ The World class has been made for you, take a look and try to understand how it 
 Your task is to write a function for Agents
 '''
 
-from numpy import random, mean
+from numpy import random, mean, where
 
 params = {'world_size':(20,20),
           'num_agents':380,
@@ -31,13 +31,31 @@ class Agent():
     # An agent needs to know if it is happy, needs to be able to move (find a vacancy and fill
     # it), can either check if it'll be happy in the new location, or not and
     # needs to report to World what it did
-        def __init__(self, world, kind, same_pref):
+    def __init__(self, world, kind, same_pref):
         self.world = world
         self.kind = kind
         self.same_pref = same_pref
         self.location = None
 
     def move(self):
+        new_loc = World(params).find_vacant()
+        if self.kind == 'red':
+            if not am_i_happy() and am_i_happy(new_loc):
+                return 4 #red moved
+            elif not am_i_happy() and not am_i_happy(new_loc):
+                return 2 # red unhappy but did not move
+            else:
+                return 0 # red happy, did not move
+        elif self.kind == 'blue':
+            if not am_i_happy() and am_i_happy(new_loc):
+                return 5 #blue moved
+            elif not am_i_happy() and not am_i_happy(new_loc):
+                return 3  # blue unhappy but did not move
+            else:
+                return 1 # blue happy, did not move
+        else:
+            pass
+
         #moves an agent
         #agent has to know if it is happy to decide if it'll move
         #agent has to be able to find vacancies (use self.world.find_vacant(...))
@@ -51,61 +69,44 @@ class Agent():
         #return 0 # red happy, did not move
         #return 1 # blue happy, did not move
 
-        new_loc = self.find_vacant()
-        if self.kind == 'red':
-            if self.am_i_happy == False and self.am_i_happy(new_loc):
-                return 4 #red moved
-            elif self.am_i_happy == False and self.am_i_happy(new_loc) == False:
-                return 2 # red unhappy but did not move
-            else:
-                return 0 # red happy, did not move
-        elif self.kind == 'blue':
-            if self.am_i_happy == False and self.am_i_happy(new_loc):
-                return 5 #blue moved
-            elif self.am_i_happy == False and self.am_i_happy(new_loc) == False:
-                return 3  # blue unhappy but did not move
-            else:
-                return 1 # blue happy, did not move
-        else:
-            pass
-
 
     def am_i_happy(self, loc=False, neighbor_check=False):
-        #this should return a boolean for whether or not an agent is happy at a location
-        #if loc is False, use current location, else use specified location
-        #for reporting purposes, allow checking of the current number of similar neighbors
-
-        #if an agent is in a patch with no neighbors at all, treat it as unhappy
-        #if len(neighbor_kinds) == 0:
-        #    return False
         if loc == False:
-            neighbors = self.locate_neighbors()     # (x,y) list of the agent's neighbors
+            neighbors = World(params).locate_neighbors(self.location)     # (x,y) list of the agent's neighbors
             neighbor_kinds = []
-            for agent in self.agents:
+            for agent in World(params).agents:
                 if agent.location in neighbors:
                     neighbor_kinds.append(agent.kind)
             if len(neighbor_kinds) == 0:
                 return False
             else:
-                ratio = count(agent.kind == self.kind for agent in neighbor_kinds) / count(agent in neighbor_kinds)
-                if ratio >= self.same_pref:
-                    return True
+                neighbor_check_list = [where(agent.kind == self.kind, True, False)]
+                if neighbor_check == True:
+                    return neighbor_check_list
                 else:
-                    return False
+                    ratio = sum(neighbor_check_list) / len(neighbor_kinds)
+                    if ratio >= self.same_pref:
+                        return True
+                    else:
+                        return False
         else:
-            neighbors = self.locate_neighbors(loc)  # (x,y) list of the agent's neighbors
+            neighbors = World(params).locate_neighbors(loc)     # (x,y) list of the agent's neighbors
             neighbor_kinds = []
-            for agent in self.agents:
+            for agent in World(params).agents:
                 if agent.location in neighbors:
                     neighbor_kinds.append(agent.kind)
             if len(neighbor_kinds) == 0:
                 return False
             else:
-                ratio = count(agent.kind == self.kind for agent in neighbor_kinds) / count(agent in neighbor_kinds)
-                if ratio >= self.same_pref:
-                    return True
+                neighbor_check_list = [where(agent.kind == self.kind, True, False)]
+                if neighbor_check == True:
+                    return neighbor_check_list
                 else:
-                    return False
+                    ratio = sum(neighbor_check_list) / len(neighbor_kinds)
+                    if ratio >= self.same_pref:
+                        return True
+                    else:
+                        return False
 
 
     def start_happy_r_b(self):
