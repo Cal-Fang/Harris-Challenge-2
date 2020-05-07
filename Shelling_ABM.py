@@ -38,21 +38,24 @@ class Agent():
         self.location = None
 
     def move(self):
-        new_loc = World(params).find_vacant()
         if self.kind == 'red':
-            if not am_i_happy() and am_i_happy(new_loc):
-                return 4 #red moved
-            elif not am_i_happy() and not am_i_happy(new_loc):
-                return 2 # red unhappy but did not move
-            else:
+            if self.am_i_happy:
                 return 0 # red happy, did not move
+            if not self.am_i_happy:
+                potiential_loc = World(params).find_vacant(return_all=True)
+                if any(self.am_i_happy(loc) for loc in potiential_loc):
+                    return 4 #red moved
+                else:
+                    return 2 # red unhappy but did not move
         elif self.kind == 'blue':
-            if not am_i_happy() and am_i_happy(new_loc):
-                return 5 #blue moved
-            elif not am_i_happy() and not am_i_happy(new_loc):
-                return 3  # blue unhappy but did not move
-            else:
-                return 1 # blue happy, did not move
+            if self.am_i_happy:
+                return 0 # blue happy, did not move
+            if not am_i_happy:
+                potiential_loc = World(params).find_vacant(return_all=True)
+                if any(self.am_i_happy(loc) for loc in potiential_loc):
+                    return 4 #blue moved
+                else:
+                    return 2 # blue unhappy but did not move
         else:
             pass
 
