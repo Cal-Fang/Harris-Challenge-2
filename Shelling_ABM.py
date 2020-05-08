@@ -38,26 +38,23 @@ class Agent():
         self.location = None
 
     def move(self):
-        if self.kind == 'red':
-            if self.am_i_happy:
-                return 0 # red happy, did not move
-            if not self.am_i_happy:
-                potiential_loc = World(params).find_vacant(return_all=True)
-                if any(self.am_i_happy(loc) for loc in potiential_loc):
-                    return 4 #red moved
-                else:
-                    return 2 # red unhappy but did not move
-        elif self.kind == 'blue':
-            if self.am_i_happy:
-                return 0 # blue happy, did not move
-            if not am_i_happy:
-                potiential_loc = World(params).find_vacant(return_all=True)
-                if any(self.am_i_happy(loc) for loc in potiential_loc):
-                    return 4 #blue moved
-                else:
-                    return 2 # blue unhappy but did not move
-        else:
-            pass
+        assert self.kind in ['red', 'blue']
+        result = -1
+        if self.am_i_happy():
+            result = 0 # happy
+        if not self.am_i_happy():
+            potiential_loc = self.world.find_vacant(return_all=True)
+            for loc in potiential_loc:
+                if self.am_i_happy(loc):
+                    self.location = loc
+                    result = 4 # moved
+                    break
+            else:
+                result = 2 # unhappy but did not move
+        assert result != -1
+        if self.kind == 'blue':
+            result += 1
+        return result
 
         #moves an agent
         #agent has to know if it is happy to decide if it'll move
@@ -75,41 +72,21 @@ class Agent():
 
     def am_i_happy(self, loc=False, neighbor_check=False):
         if loc == False:
-            neighbors = World(params).locate_neighbors(self.location)     # (x,y) list of the agent's neighbors
-            neighbor_kinds = []
-            for agent in World(params).agents:
-                if agent.location in neighbors:
-                    neighbor_kinds.append(agent.kind)
-            if len(neighbor_kinds) == 0:
-                return False
-            else:
-                neighbor_check_list = [where(agent.kind == self.kind, True, False)]
-                if neighbor_check == True:
-                    return neighbor_check_list
-                else:
-                    ratio = sum(neighbor_check_list) / len(neighbor_kinds)
-                    if ratio >= self.same_pref:
-                        return True
-                    else:
-                        return False
+            neighbors = self.world.locate_neighbors(self.location)      # (x,y) list of the agent's neighbors
         else:
-            neighbors = World(params).locate_neighbors(loc)     # (x,y) list of the agent's neighbors
-            neighbor_kinds = []
-            for agent in World(params).agents:
-                if agent.location in neighbors:
-                    neighbor_kinds.append(agent.kind)
-            if len(neighbor_kinds) == 0:
-                return False
-            else:
-                neighbor_check_list = [where(agent.kind == self.kind, True, False)]
-                if neighbor_check == True:
-                    return neighbor_check_list
-                else:
-                    ratio = sum(neighbor_check_list) / len(neighbor_kinds)
-                    if ratio >= self.same_pref:
-                        return True
-                    else:
-                        return False
+            neighbors = self.world.locate_neighbors(loc)      # (x,y) list of the agent's neighbors
+        neighbor_agents = []
+        for agent in self.world.agents:
+            if agent.location in neighbors:
+                neighbor_agents.append(agent)
+        if len(neighbor_agents) == 0:
+            return False
+        neighbor_check_list = [agent.kind == self.kind for agent in neighbor_agents]
+        if neighbor_check == True:
+            return neighbor_check_list
+        else:
+            ratio = sum(neighbor_check_list) * 1.0 / len(neighbor_agents)
+            return ratio >= self.same_pref
 
 
     def start_happy_r_b(self):
